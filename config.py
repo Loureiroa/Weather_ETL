@@ -6,7 +6,7 @@ load_dotenv()
 
 # Configurações da API
 API_KEY = os.getenv("OPENWEATHER_API_KEY")
-CITIES = ["Sao Paulo", "Rio de Janeiro", "Brasilia", "Salvador", "Fortaleza"]
+CITIES = ["Sao Paulo,BR", "Rio de Janeiro,BR", "Brasilia,BR", "Salvador,BR", "Fortaleza,BR"]
 
 # Configurações do banco de dados
 DB_NAME = os.getenv("DB_NAME")

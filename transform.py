@@ -3,6 +3,8 @@ from datetime import datetime
 def transform_weather_data(data):
     if not data:
         return None
+    
+    timestamp = datetime.fromtimestamp(data["dt"])
 
     return {
         # Chave natural (usada como PK em dim_city)
@@ -42,5 +44,13 @@ def transform_weather_data(data):
 
         # Precipitação (chuva e neve)
         "rain_1h": data.get("rain", {}).get("1h", 0),
-        "snow_1h": data.get("snow", {}).get("1h", 0)
+        "snow_1h": data.get("snow", {}).get("1h", 0),
+        
+        # Novos campos de granularidade (facilitar agrupamentos, filtros e análises)
+        
+        "date": timestamp.date(),
+        "time": timestamp.time(),
+        "day_of_week": timestamp.strftime("%A"),
+        "month": timestamp.month,
+        "year": timestamp.year
     }

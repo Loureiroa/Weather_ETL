@@ -23,15 +23,16 @@ def insert_and_return_id(cur, table, columns, values):
     placeholders = ', '.join(['%s'] * len(values))
     col_str = ', '.join(columns)
 
-    # Mapeamento do nome correto da PK para cada dimensão #
+    # Mapeamento de tabela para chave primária
     pk_column = {
         "dim_coordinates": "coord_id",
         "dim_weather": "weather_id",
         "dim_temperature": "temp_id",
         "dim_wind": "wind_id",
         "dim_precipitation": "precipitation_id",
-        "dim_time": "time_id"
-    }.get(table, "id")  # default para "id" se não achar
+        "dim_time": "time_id",
+        "dim_date_time": "date_time_id"
+    }.get(table, "id")  # Se não achar no dicionário, tenta "id" como padrão.
 
     query = f"""
         INSERT INTO {table} ({col_str})
@@ -58,20 +59,27 @@ def insert_weather_data(data):
         wind_id = insert_and_return_id(cur, "dim_wind", ["speed", "direction"], [data["wind_speed"], data["wind_direction"]])
         prec_id = insert_and_return_id(cur, "dim_precipitation", ["rain_1h", "snow_1h"], [data["rain_1h"], data["snow_1h"]])
         time_id = insert_and_return_id(cur, "dim_time", ["timestamp", "sunrise", "sunset"], [data["timestamp"], data["sunrise"], data["sunset"]])
+        
+        date_time_id = insert_and_return_id(cur, "dim_date_time",
+        ["date", "time", "day_of_week", "month", "year"],
+        [data["date"], data["time"], data["day_of_week"], data["month"], data["year"]]
+    )
 
-        # Inserir na tabela fato
+
+        # Inserir na tabela fato 
         fact_query = """
             INSERT INTO weather_fact (
                 city_id, coord_id, weather_id, temp_id,
                 wind_id, precipitation_id, time_id,
-                visibility, clouds
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                date_time_id, visibility, clouds
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         cur.execute(fact_query, (
             city_id, coord_id, weather_id, temp_id,
             wind_id, prec_id, time_id,
-            data["visibility"], data["clouds"]
+            date_time_id, data["visibility"], data["clouds"]
         ))
+
 
         conn.commit()
         print(f"[INFO] Dados normalizados inseridos para {data['city_name']}")
